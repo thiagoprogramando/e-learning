@@ -70,7 +70,6 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('users', [UserController::class, 'index'])->name('users');
     Route::get('user/{uuid}', [UserController::class, 'show'])->name('user');
-    Route::post('created-user', [UserController::class, 'store'])->name('created-user');
     Route::post('updated-user/{uuid}', [UserController::class, 'update'])->name('updated-user');
     Route::post('deleted-user/{uuid}', [UserController::class, 'destroy'])->name('deleted-user');
 
