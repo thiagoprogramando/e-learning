@@ -12,7 +12,7 @@ return new class extends Migration {
             $table->uuid('uuid')->unique();
             $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
             $table->foreignId('course_id')->nullable()->constrained('courses')->nullOnDelete();
-            $table->foreignId('coupon_id')->nullable()->constrained('coupon')->nullOnDelete();
+            $table->foreignId('coupon_id')->nullable()->constrained('coupons')->nullOnDelete();
             $table->string('payment_description')->default('Cobrança');
             $table->decimal('payment_value', 10, 2);
             $table->enum('payment_status', ['pending', 'paid', 'canceled'])->default('pending');
