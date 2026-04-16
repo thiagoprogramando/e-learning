@@ -12,7 +12,7 @@ return new class extends Migration {
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
             $table->foreignId('course_id')->nullable()->constrained()->nullOnDelete();
             $table->foreignId('lesson_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('block_id')->nullable()->constrained()->cascadeOnDelete();
+            $table->foreignId('block_id')->nullable()->constrained('lesson_blocks')->cascadeOnDelete();
             $table->boolean('completed')->default(true);
             $table->timestamps();
 
@@ -20,7 +20,6 @@ return new class extends Migration {
         });
     }
 
-    
     public function down(): void {
         Schema::dropIfExists('views');
     }
