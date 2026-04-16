@@ -16,68 +16,69 @@
                             <i class="ri-error-warning-line text-danger ri-24px mx-4" data-bs-toggle="modal" data-bs-target="#ticketModal"></i>
                         </div>
                     </div>
-                    <div class="card academy-content shadow-none">
+                    <div class="card academy-content shadow-none border">
                         <div class="card-body pt-3">
-                            @if (isset($lesson))
-                                @foreach ($lesson->blocks as $item)
-                                    @switch($item->type)
-                                        @case('text')
-                                            <div class="p-2 mb-5" id="{{ $item->id }}">
-                                                {!! $item->content !!}
-                                            </div>
-                                            @break
-                                        @case('video')
-                                            <div class="p-2 mb-5" id="{{ $item->id }}">
-                                                <div class="cursor-pointer">
-                                                    <video class="w-100" poster="https://cdn.plyr.io/static/demo/View_From_A_Blue_Moon_Trailer-HD.jpg" id="plyr-video-player" playsinline controls>
-                                                        <source src="{{ asset($item->content) }}" type="video/mp4"/>
-                                                    </video>
-                                                </div>
-                                            </div>
-                                            @break
-                                        @case('image')
-                                            <div class="card bg-dark border-0 text-white mb-5" id="{{ $item->id }}">
-                                                <img class="card-img" src="{{ asset($item->content) }}" alt="{{ $item->title }}">
-                                            </div>
-                                            @break
-                                        @case('audio')
-                                            <div class="p-2 mb-5" id="{{ $item->id }}">
-                                                <h5 class="card-header">{{ $item->title }}</h5>
-                                                <div class="card-body">
-                                                    <audio class="w-100" id="plyr-audio-player" controls>
-                                                        <source src="{{ asset($item->content) }}" type="audio/mp3">
-                                                    </audio>
-                                                </div>
-                                            </div>
-                                            @break
-                                        @default
-                                            <div>---</div>
-                                            @break  
-                                    @endswitch
-                                @endforeach
-                            @else
-                                <h5>Sobre o Curso</h5>
-                                <p class="mb-0">
-                                    {{ $course->description }}
-                                </p>
-                                <hr class="my-6">
-                                <h5>Detalhes</h5>
-                                <div class="d-flex flex-wrap row-gap-2">
-                                    <div class="me-12">
-                                        <p class="text-nowrap mb-2"><i class="ri-group-line ri-20px me-2"></i>Atividades: Sim</p>
-                                        <p class="text-nowrap mb-0"><i class="ri-pages-line ri-20px me-2"></i>Prova: Sim</p>
-                                        </div>
-                                        <div>
-                                        <p class="text-nowrap mb-2">
-                                            <i class="ri-video-upload-line ri-20px me-2 ms-50"></i>Aulas: {{ $course->lessons->count() }}
-                                        </p>
-                                        <p class="text-nowrap mb-0">
-                                            <i class="ri-time-line ri-20px me-2"></i>Duração: {{ $course->duration }}/horas
-                                        </p>
+                            @switch($block->type)
+
+                                @case('text')
+                                    <div class="p-2 mb-5">
+                                        {!! $block->content !!}
                                     </div>
+                                @break
+
+                                @case('video')
+                                    <div class="p-2 mb-5">
+                                        <video class="w-100" controls>
+                                            <source src="{{ asset($block->content) }}" type="video/mp4"/>
+                                        </video>
+                                    </div>
+                                @break
+
+                                @case('image')
+                                    <div class="card bg-dark border-0 text-white mb-5">
+                                        <img class="card-img" src="{{ asset($block->content) }}" alt="{{ $block->title }}">
+                                    </div>
+                                @break
+
+                                @case('audio')
+                                    <div class="p-2 mb-5">
+                                        <h5>{{ $block->title }}</h5>
+                                        <audio class="w-100" controls>
+                                            <source src="{{ asset($block->content) }}" type="audio/mp3">
+                                        </audio>
+                                    </div>
+                                @break
+
+                                @default
+                                    <div>---</div>
+                            @endswitch
+                            <div class="text-end">
+                                @if($nextBlock)
+                                    <a href="{{ route('ava', ['course' => $course->uuid, 'lesson' => $nextLesson->uuid ?? $lesson->uuid, 'block'  => $nextBlock->id]) }}" class="btn btn-outline-success">
+                                        Próxima
+                                    </a>
+                                @else
+                                    <button class="btn btn-outline-secondary" disabled>
+                                        Fim do curso
+                                    </button>
+                                @endif
+                            </div>
+                            <hr class="my-6">
+                            <h5>Detalhes do Curso</h5>
+                            <div class="d-flex flex-wrap row-gap-2">
+                                <div class="me-12">
+                                    <p class="text-nowrap mb-2"><i class="ri-group-line ri-20px me-2"></i>Atividades: Sim</p>
+                                    <p class="text-nowrap mb-0"><i class="ri-pages-line ri-20px me-2"></i>Prova: Sim</p>
                                 </div>
-                                <button type="button" class="btn btn-outline-dark mt-5 mb-5">ESCOLHA UMA AULA NO MENU PARA INICIAR <i class="ri-arrow-right-line ri-16px lh-1 scaleX-n1-rtl"></i></button>
-                            @endif
+                                <div>
+                                    <p class="text-nowrap mb-2">
+                                        <i class="ri-video-upload-line ri-20px me-2 ms-50"></i>Aulas: {{ $course->lessons->count() }}
+                                    </p>
+                                    <p class="text-nowrap mb-0">
+                                        <i class="ri-time-line ri-20px me-2"></i>Duração: {{ $course->duration }}/horas
+                                    </p>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -86,26 +87,33 @@
 
         <div class="col-12 col-sm-12 col-md-8 col-lg-4">
             <div class="accordion stick-top accordion-custom-button" id="courseContent">
-                @foreach ($course->lessons as $index => $lesson)
-                    <div class="accordion-item @if ($index == 0) active @endif mb-0">
-                        <div class="accordion-header border-bottom-0" id="headingOne">
-                            <button type="button" class="accordion-button" data-bs-toggle="collapse" data-bs-target="#chapterOne" aria-expanded="true" aria-controls="chapterOne">
+                @foreach ($course->lessons as $index => $lessonList)
+                    <div class="accordion-item {{ $block->lesson_id == $lessonList->id ? 'active' : '' }}">
+                        <div class="accordion-header border-bottom-0">
+                            <button type="button" class="accordion-button {{ $block->lesson_id == $lessonList->id ? '' : 'collapsed' }}" data-bs-toggle="collapse" data-bs-target="#chapter{{ $index }}" aria-expanded="{{ $block->lesson_id == $lessonList->id ? 'true' : 'false' }}">
+                                
                                 <span class="d-flex flex-column">
-                                    <span class="h5 mb-0">{{ $lesson->title }}</span>
-                                    <span class="text-body fw-normal">{{ $lesson->blocks->count() }} Blocos</span>
+                                    <span class="h5 mb-0">{{ $lessonList->title }}</span>
+                                    <span class="text-body fw-normal">
+                                        {{ ($index + 1).' / '.$lessonList->blocks->count() }}
+                                    </span>
                                 </span>
                             </button>
                         </div>
-                        <div id="chapterOne" class="accordion-collapse collapse @if ($index == 0) show @endif" data-bs-parent="#courseContent">
-                            @foreach ($lesson->blocks as $index => $block)
-                                <div class="accordion-body py-4 border-top">
-                                    <div class="d-flex align-items-center mb-4">
-                                        <a href="{{ route('ava', ['course' => $course->uuid, 'lesson' => $lesson->uuid]) }}#{{ $block->id }}" class="text-decoration-none">
-                                            <span class="mb-0 h6">{{ ($index + 1).'. '.$block->title  }}</span>
-                                        </a>
+
+                        <div id="chapter{{ $index }}" class="accordion-collapse collapse {{ $block->lesson_id == $lessonList->id ? 'show' : '' }}" data-bs-parent="#courseContent">
+                            <div class="accordion-body py-4 border-top">
+                                @foreach ($lessonList->blocks as $lessonIndex => $blockItem)
+                                    <div class="form-check d-flex align-items-center mb-4">
+                                        <input class="form-check-input" type="checkbox" id="defCheck{{ $blockItem->id }}" data-url="{{ route('ava', ['course' => $course->uuid, 'lesson' => $lessonList->uuid, 'block' => $blockItem->id]) }}" {{ ($block->id == $blockItem->id || in_array($blockItem->id, $viewedBlocks ?? [])) ? 'checked' : '' }}/>
+                                        <label for="defCheck{{ $blockItem->id }}" class="form-check-label ms-4">
+                                            <span class="mb-0 h6">
+                                                {{ ($lessonIndex + 1).'. '.$blockItem->title }}
+                                            </span>
+                                        </label>
                                     </div>
-                                </div>
-                            @endforeach
+                                @endforeach
+                            </div>
                         </div>
                     </div>
                 @endforeach
@@ -127,21 +135,11 @@
                     <form action="{{ route('created-ticket') }}" method="POST" class="row">
                         @csrf
                         <input type="hidden" name="course_id" value="{{ $course->id }}">
+                        <input type="hidden" name="lesson_id" value="{{ $lesson->id }}">
                         <div class="col-sm-12 col-md-12 col-lg-12">
                             <div class="form-floating form-floating-outline mb-4">
                                 <textarea name="comment" id="comment" class="form-control h-px-100" placeholder="Problemas | Dúvidas | Sugestões" name="comment">{{ old('comment') }}</textarea>
                                 <label for="comment">Problemas | Dúvidas | Sugestões</label>
-                            </div>
-                        </div>
-                        <div class="col-sm-12 col-md-12 col-lg-12">
-                            <div class="form-floating form-floating-outline mb-4">
-                                <select name="lesson_id" class="form-select" tabindex="0" id="lesson_id">
-                                    <option value="  " selected>Todos</option>
-                                    @foreach ($course->lessons as $index => $lesson)
-                                        <option value="{{ $lesson->id }}">{{ $lesson->title }}</option>
-                                    @endforeach
-                                </select>
-                                <label for="lesson_id">Escolha uma Aula/Tópico:</label>
                             </div>
                         </div>
                         <div class="col-12 d-flex flex-wrap justify-content-center gap-4 row-gap-4">
@@ -155,4 +153,14 @@
     </div>
 
     <script src="{{ asset('assets/js/app-academy-course-details.js') }}"></script>
+    <script>
+        document.querySelectorAll('.form-check-input').forEach(input => {
+            input.addEventListener('change', function() {
+                const url = this.dataset.url;
+                if (url) {
+                    window.location.href = url;
+                }
+            });
+        });
+    </script>
 @endsection

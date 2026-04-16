@@ -7,6 +7,7 @@ use App\Models\Coupon;
 use App\Models\Course;
 use App\Models\Invoice;
 use App\Models\Lesson;
+use App\Models\View;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
@@ -29,16 +30,69 @@ class CatalogController extends Controller {
         ]);
     }
 
-    public function show ($course, $lesson = null) {
+    public function show ($course, $lesson, $block = null) {
 
         $course = Course::where('uuid', $course)->first();
         if (!$course) {
-            return redirect()->route('catalog')->with('infor', 'Curso indisponível para compra!');
+            return redirect()->route('catalog')->with('info', 'Curso indisponível para compra!');
+        }
+
+        $lesson = Lesson::where('uuid', $lesson)->first();
+        if (!$lesson) {
+
+            $lesson = $course->lessons()->orderBy('id')->first();
+            if (!$lesson) {
+                return redirect()->route('catalog')->with('info', 'Curso sem aulas disponíveis!');
+            }
+        }
+
+        $blocks         = $lesson->blocks()->orderBy('id')->get();
+        $currentBlock   = $block ? $blocks->where('id', $block)->first() : $blocks->first();
+        $nextBlock      = null;
+
+        if ($currentBlock) {
+            $currentIndex = $blocks->search(function ($item) use ($currentBlock) {
+                return $item->id === $currentBlock->id;
+            });
+
+            $nextBlock = $blocks->get($currentIndex + 1);
+        }
+
+        if ($currentBlock && Auth::check()) {
+            View::updateOrCreate(
+                [
+                    'user_id'  => Auth::id(),
+                    'block_id' => $currentBlock->id
+                ],
+                [
+                    'course_id' => $course->id,
+                    'lesson_id' => $lesson->id,
+                    'completed' => true
+                ]
+            );
+        }
+
+        $nextLesson = null;
+        if (!$nextBlock) {
+
+            $lessons = $course->lessons()->orderBy('id')->get();
+            $currentLessonIndex = $lessons->search(function ($item) use ($lesson) {
+                return $item->id === $lesson->id;
+            });
+
+            $nextLesson = $lessons->get($currentLessonIndex + 1);
+            if ($nextLesson) {
+                $nextBlock = $nextLesson->blocks()->orderBy('id')->first();
+            }
         }
 
         return view('app.Course.Catalog.show', [
-            'course' => $course,
-            'lesson' => Lesson::where('uuid', $lesson)->first()
+            'course'        => $course,
+            'lesson'        => $lesson,
+            'block'         => $currentBlock,
+            'nextBlock'     => $nextBlock,
+            'nextLesson'    => $nextLesson ?? $lesson,
+            'viewedBlocks'  => View::where('course_id', $course->id)->where('user_id', Auth::id())->pluck('block_id')->toArray()
         ]);
     }
 
